@@ -20,6 +20,16 @@ router.get("/climbing-condition", async (req, res) => {
   }
 });
 
+// Get current weather
+router.get("/current-weather", async (req, res) => {
+  try {
+    const weather = await getCurrentWeather();
+    res.json(weather);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch current weather" });
+  }
+});
+
 async function getClimbingCondition() {
   const url = "https://api.open-meteo.com/v1/forecast?latitude=48.405&longitude=2.702&daily=rain_sum,temperature_2m_max,temperature_2m_min&current=temperature_2m,rain&past_days=2&forecast_days=1";
   
@@ -65,6 +75,43 @@ async function getClimbingCondition() {
       description: `Rocks are likely still wet from significant rainfall (${pastDaysRain.toFixed(1)}mm) over the past 2 days. Climbing should be avoided until surfaces have had sufficient time to dry completely.`
     };
   }
+}
+
+async function getCurrentWeather() {
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=48.405&longitude=2.702&current=temperature_2m,weather_code";
+  
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  const temperature = data.current.temperature_2m;
+  const weatherCode = data.current.weather_code;
+  
+  // Map weather code
+  const condition = getWeatherCondition(weatherCode);
+  
+  return {
+    temperature: temperature,
+    condition: condition
+  };
+}
+
+function getWeatherCondition(weatherCode) {
+  // 0 = Clear sky --> sunny
+  if (weatherCode === 0) {
+    return "sunny";
+  }
+  
+  // Rain, snow, or storm codes -> rainy
+  if ((weatherCode >= 51 && weatherCode <= 67) || // Drizzle and rain
+      (weatherCode >= 71 && weatherCode <= 77) || // Snow
+      (weatherCode >= 80 && weatherCode <= 82) || // Rain showers
+      (weatherCode >= 85 && weatherCode <= 86) || // Snow showers
+      (weatherCode >= 95 && weatherCode <= 99)) { // Thunderstorm
+    return "rainy";
+  }
+  
+  // Everything else (cloudy, foggy, etc.) -> cloudy
+  return "cloudy";
 }
 
 export default router;
