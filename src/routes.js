@@ -14,6 +14,7 @@ router.get("/hotspots", (req, res) => {
 router.get("/climbing-condition", async (req, res) => {
   try {
     const result = await getClimbingCondition();
+    
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch climbing condition" });
@@ -31,7 +32,7 @@ router.get("/current-weather", async (req, res) => {
 });
 
 async function getClimbingCondition() {
-  const url = "https://api.open-meteo.com/v1/forecast?latitude=48.405&longitude=2.702&daily=rain_sum,temperature_2m_max,temperature_2m_min&current=temperature_2m,rain&past_days=2&forecast_days=1";
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=48.405&longitude=2.702&daily=rain_sum,temperature_2m_max,temperature_2m_min&current=temperature_2m,weather_code&past_days=2&forecast_days=1";
   
   const response = await fetch(url);
   const data = await response.json();
@@ -50,7 +51,7 @@ async function getClimbingCondition() {
   });
   
   const pastDaysRain = mappedData.slice(0, 2).reduce((sum, day) => sum + day.rainTotal, 0);
-  const isCurrentlyRaining = data.current.rain > 0;
+  const isCurrentlyRaining = isRaining(data.current.weather_code);
   
   // Determine condition based on current rain and past days' rain total
   // Thresholds: 0mm = good, 0.1-2mm = medium, >2mm = bad
@@ -67,7 +68,7 @@ async function getClimbingCondition() {
   } else if (pastDaysRain <= 2) {
     return {
       condition: "medium",
-      description: `Even though it's dry today, recent rainfall totaling ${pastDaysRain.toFixed(1)}mm over the past 2 days means rocks may still be wet. Exercise caution and avoid climbing on surfaces that appear damp or slippery.`
+      description: `Even though it's currently dry, recent rainfall totaling ${pastDaysRain.toFixed(1)}mm over the past 2 days means rocks may still be wet. Exercise caution and avoid climbing on surfaces that appear damp or slippery.`
     };
   } else {
     return {
@@ -95,6 +96,15 @@ async function getCurrentWeather() {
   };
 }
 
+function isRaining(weatherCode) {
+  // Check if weather code indicates rain, snow, or storm
+  return (weatherCode >= 51 && weatherCode <= 67) || // Drizzle and rain
+         (weatherCode >= 71 && weatherCode <= 77) || // Snow
+         (weatherCode >= 80 && weatherCode <= 82) || // Rain showers
+         (weatherCode >= 85 && weatherCode <= 86) || // Snow showers
+         (weatherCode >= 95 && weatherCode <= 99);   // Thunderstorm
+}
+
 function getWeatherCondition(weatherCode) {
   // 0 = Clear sky --> sunny
   if (weatherCode === 0) {
@@ -102,11 +112,7 @@ function getWeatherCondition(weatherCode) {
   }
   
   // Rain, snow, or storm codes -> rainy
-  if ((weatherCode >= 51 && weatherCode <= 67) || // Drizzle and rain
-      (weatherCode >= 71 && weatherCode <= 77) || // Snow
-      (weatherCode >= 80 && weatherCode <= 82) || // Rain showers
-      (weatherCode >= 85 && weatherCode <= 86) || // Snow showers
-      (weatherCode >= 95 && weatherCode <= 99)) { // Thunderstorm
+  if (isRaining(weatherCode)) {
     return "rainy";
   }
   
