@@ -1,0 +1,22 @@
+{
+  "name": "Fontainebleau Guide API",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Fontainebleau Guide API",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "nodemon src/main.js",
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^13.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "serialport": "^13.0.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
