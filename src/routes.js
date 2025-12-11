@@ -59,19 +59,19 @@ async function getClimbingCondition() {
     return {
       condition: "bad",
       title: "Rainy Weather",
-      description: "Rocks are currently wet due to active rainfall. Climbing conditions are unsafe and should be avoided until the rain stops and surfaces have time to dry."
+      description: "Rocks are currently wet due to active rainfall. Climbing conditions are unsafe and should be avoided until the rain stops and surfaces have sufficient time to dry completely."
     };
   } else if (pastDaysRain === 0) {
     return {
       condition: "good",
       title: "Sunny Weather",
-      description: "No recent rainfall and low moisture levels. Perfect climbing conditions with dry rock surfaces."
+      description: "No recent rainfall and low moisture levels detected. Perfect climbing conditions with dry rock surfaces that are safe for climbing activities."
     };
   } else if (pastDaysRain <= 2) {
     return {
       condition: "medium",
       title: "Cloudy Weather",
-      description: `Even though it's currently dry, recent rainfall totaling ${pastDaysRain.toFixed(1)}mm over the past 2 days means rocks may still be wet. Exercise caution and avoid climbing on surfaces that appear damp or slippery.`
+      description: `Recent rainfall totaling ${pastDaysRain.toFixed(1)}mm over the past 2 days means rocks may still be wet. Exercise caution and avoid climbing on surfaces that appear damp or slippery.`
     };
   } else {
     return {
