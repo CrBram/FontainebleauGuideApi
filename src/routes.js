@@ -77,7 +77,7 @@ async function getClimbingCondition() {
     return {
       condition: "bad",
       title: "Rainy Weather",
-      description: `Rocks are likely still wet from significant rainfall (${pastDaysRain.toFixed(1)}mm) over the past 2 days. Climbing should be avoided until surfaces have had sufficient time to dry completely.`
+      description: `Rocks likely still wet from ${pastDaysRain.toFixed(1)}mm rainfall over past 2 days. Avoid climbing until surfaces dry.`
     };
   }
 }
